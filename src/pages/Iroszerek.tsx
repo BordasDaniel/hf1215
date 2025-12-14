@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 
-function List({ data }: { data: any }) {
+function List({ data }: { data: JSON }) {
     const ids = Array.isArray(data)
         ? data.map((item: any) => item.id ?? item)
         : Object.keys(data || {});
@@ -25,7 +25,7 @@ function List({ data }: { data: any }) {
 }
 
 function Iroszer() {
-    const [data, setData] = useState<any>({});
+    const [data, setData] = useState<Record<string, any>>({});
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -34,10 +34,10 @@ function Iroszer() {
 
         async function fetchData() {
             try {
-                const response = await fetch('https://iroszer.sulla.hu/items');
+                const response: Response = await fetch('https://iroszer.sulla.hu/items');
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const json = await response.json();
-                const dataPart = json?.data ?? {};
+                const json: JSON | any = await response.json();
+                const dataPart = json?.data ?? json ?? {};
                 if (!cancelled) setData(dataPart);
             } catch (err: any) {
                 console.error('Hiba a lekérés során:', err);
@@ -63,7 +63,7 @@ function Iroszer() {
                 <h1 className="m-0">Iroszer</h1>
                 <NavLink to="/iroszerpost" className="btn btn-primary">Új írószer létrehozása</NavLink>
             </div>
-            <List data={data} />
+            <List data={data as JSON} />
         </div>
     );
 }

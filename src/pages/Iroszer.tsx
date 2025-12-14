@@ -2,7 +2,13 @@ import { useEffect, useState} from "react";
 import { NavLink, useParams } from "react-router-dom";
 
 
-function IroszerAdat({ data }: { data: { id: string; name: string; price: number } })
+interface IroszerData {
+    id: string;
+    name: string;
+    price: number;
+}
+
+function IroszerAdat(data: IroszerData) 
 {
     console.log("IroszerAdat data:", data);
     if (!data || Object.keys(data).length === 0) return <div>Nincs adat</div>;
@@ -20,9 +26,9 @@ function IroszerAdat({ data }: { data: { id: string; name: string; price: number
 function Iroszer()
 {
 
-    const [data, setData] = useState<Object>({});
+    const [data, setData] = useState<IroszerData>({} as IroszerData);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | Error | null>(null);
     const id:string = useParams().id || "";
 
     useEffect(() => {
@@ -32,10 +38,10 @@ function Iroszer()
             try {
                 const response: Response = await fetch(`https://iroszer.sulla.hu/items/${id}`);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const json = await response.json();
-                const dataPart = json?.data ?? json ?? {};
+                const json: IroszerData = await response.json();
+                const dataPart: IroszerData = json ?? {} as IroszerData;
                 if (!cancelled) setData(dataPart);
-            } catch (err: any) {
+            } catch (err: Error | any) {
                 console.error('Hiba a lekérés során:', err);
                 if (!cancelled) setError(err?.message || String(err));
             } finally {
@@ -51,7 +57,7 @@ function Iroszer()
     }, [id]);
 
     if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    if (error) return <div>Error: {error instanceof Error ? error.message : String(error)}</div>;
 
     
 
@@ -59,7 +65,7 @@ function Iroszer()
         <>
             <h1>Írószer: {id}</h1>
             <NavLink to="/iroszerek">Vissza az írószerekhez</NavLink>
-            <IroszerAdat data={data as { id: string; name: string; price: number }} />
+            <IroszerAdat {...data} />
         </>
     );
 
