@@ -6,14 +6,15 @@ import { NavLink, useNavigate } from "react-router-dom";
 function IroszerPost() {
     const navigate = useNavigate();
 
-    const [idName, setIdName] = useState<string>("");
+    const [id, setId] = useState<string>("");
+    const [name, setName] = useState<string>("");
     const [priceStr, setPriceStr] = useState<string>("");
 
-    async function postItem(id: string, price: number): Promise<void> {
+    async function postItem(id: string, name: string, price: number): Promise<void> {
         setLoading(true);
         setError(null);
         try {
-            const body = { id, name: id, price };
+            const body = { id: id, name: name, price: price };
             const response = await fetch('https://iroszer.sulla.hu/items', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -46,17 +47,31 @@ function IroszerPost() {
                         <NavLink to="/iroszerek" className="btn btn-link">Vissza</NavLink>
                     </div>
 
-                    <form onSubmit={(e) => { e.preventDefault(); postItem(idName, Number(priceStr)); }}>
+                    <form onSubmit={(e) => { e.preventDefault(); postItem(id, name, Number(priceStr)); }}>
                         <div className="mb-3">
-                            <label className="form-label">ID / Név</label>
+                            <label className="form-label">ID</label>
                             <input
                                 className="form-control"
                                 type="text"
-                                value={idName}
-                                onChange={(e) => setIdName(e.target.value)}
+                                value={id}
+                                onChange={(e) => setId(e.target.value)}
                                 placeholder="id (megegyezik a név)"
                             />
                         </div>
+
+                        <div className="mb-3">
+                            <label className="form-label">ID</label>
+                            <input
+                                className="form-control"
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="név"
+                            />
+                        </div>
+
+
+
 
                         <div className="mb-3">
                             <label className="form-label">Ár</label>
@@ -70,7 +85,7 @@ function IroszerPost() {
                         </div>
 
                         <div className="d-flex gap-2">
-                            <button type="submit" className="btn btn-success" disabled={loading || !idName || priceStr === ""}>
+                            <button type="submit" className="btn btn-success" disabled={loading || !id || !name || priceStr === ""}>
                                 {loading ? 'Feltöltés...' : 'Létrehoz'}
                             </button>
                             <button type="button" className="btn btn-secondary" onClick={() => navigate('/iroszerek')}>Mégse</button>
