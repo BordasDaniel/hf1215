@@ -1,6 +1,10 @@
 import { useEffect, useState} from "react";
 import { NavLink, useParams } from "react-router-dom";
 
+interface IroszerDataFullFetcth {
+    found: boolean;
+    item: IroszerData;
+}
 
 interface IroszerData {
     id: string;
@@ -38,9 +42,9 @@ function Iroszer()
             try {
                 const response: Response = await fetch(`https://iroszer.sulla.hu/items/${id}`);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const json: IroszerData = await response.json();
-                const dataPart: IroszerData = json ?? {} as IroszerData;
-                if (!cancelled) setData(dataPart);
+                const json: IroszerDataFullFetcth = await response.json();
+                const itemPart: IroszerData = json?.item ?? json ?? {} as IroszerData;
+                if (!cancelled) setData(itemPart);
             } catch (err: Error | any) {
                 console.error('Hiba a lekérés során:', err);
                 if (!cancelled) setError(err?.message || String(err));

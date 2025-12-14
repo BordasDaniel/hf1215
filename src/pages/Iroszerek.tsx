@@ -1,12 +1,26 @@
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 
-function List({ data }: { data: JSON }) {
-    const ids = Array.isArray(data)
-        ? data.map((item: any) => item.id ?? item)
-        : Object.keys(data || {});
+interface IroszerDataFullFetcth {
+    status: boolean,
+    data: ListaData;
+}
 
-    if (ids.length === 0) return <div>Nincs elem</div>;
+interface ListaData {
+    [id: string]: IroszerData;
+}
+
+interface IroszerData {
+    id: string;
+    name: string;
+    price: number;
+}
+ 
+
+function List({ data }: { data: ListaData}) {
+    
+    const ids: string[] = Array.isArray(data) ? data.map((item: IroszerData) => item.id) : Object.keys(data);
+    if (!data || Object.keys(data).length === 0) return <div>Nincs adat</div>;
 
     return (
         <div className="items-container">
@@ -25,9 +39,9 @@ function List({ data }: { data: JSON }) {
 }
 
 function Iroszer() {
-    const [data, setData] = useState<Record<string, any>>({});
+    const [data, setData] = useState<ListaData>({} as ListaData);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<Error | string | null>(null);
 
     useEffect(() => {
         let cancelled = false;
@@ -36,12 +50,12 @@ function Iroszer() {
             try {
                 const response: Response = await fetch('https://iroszer.sulla.hu/items');
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const json: JSON | any = await response.json();
-                const dataPart = json?.data ?? json ?? {};
+                const json: IroszerDataFullFetcth = await response.json();
+                const dataPart: ListaData = json?.data ?? json ?? {};
                 if (!cancelled) setData(dataPart);
-            } catch (err: any) {
+            } catch (err: Error | any) {
                 console.error('Hiba a lekérés során:', err);
-                if (!cancelled) setError(err?.message || String(err));
+                if (!cancelled) setError(err instanceof Error ? err.message : String(err));
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -55,7 +69,7 @@ function Iroszer() {
     }, []);
 
     if (loading) return <div className="container py-4">Loading...</div>;
-    if (error) return <div className="container py-4">Error: {error}</div>;
+    if (error) return <div className="container py-4">Error: {error instanceof Error ? error.message : String(error)}</div>;
 
     return (
         <div className="container py-4">
@@ -63,7 +77,7 @@ function Iroszer() {
                 <h1 className="m-0">Iroszer</h1>
                 <NavLink to="/iroszerpost" className="btn btn-primary">Új írószer létrehozása</NavLink>
             </div>
-            <List data={data as JSON} />
+            <List data={data} />
         </div>
     );
 }
